@@ -1,0 +1,129 @@
+#cloud-config
+output: {all: '| tee -a /var/log/cloud-init-controller.log'}
+package_upgrade: false
+packages:
+  - git
+  - sqlcl
+write_files:
+- path: /root/jenkins.systemd.override
+  permissions: '0644'
+  content: |
+    [Service]
+    Environment="JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
+  append: false
+  defer: true
+- path: /root/default-user.groovy
+  permissions: '0644'
+  content: |
+    #!groovy
+
+    import jenkins.model.*
+    import hudson.security.*
+    import jenkins.security.s2m.AdminWhitelistRule
+
+    def instance = Jenkins.getInstance()
+
+    def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+
+    hudsonRealm.createAccount('admin', '${jenkins_password}')
+    instance.setSecurityRealm(hudsonRealm)
+
+    def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+    instance.setAuthorizationStrategy(strategy)
+    instance.save()
+
+    Jenkins.instance.getInjector().getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
+  append: false
+  defer: true
+- path: /root/disable-controller-executor.groovy
+  permissions: '0644'
+  content: |
+    import jenkins.model.*
+
+    def instance = Jenkins.getInstance()
+    instance.setNumExecutors(0)
+    instance.save()
+  append: false
+  defer: true
+- path: /root/secret.groovy
+  permissions: '0644'
+  content: |
+    for (aSlave in hudson.model.Hudson.instance.slaves) {
+      if (aSlave.name == "ControllerAgent") {
+        println aSlave.name + "," + aSlave.getComputer().getJnlpMac()
+      }
+    }
+  append: false
+  defer: true
+- path: /root/jenkins_setup.sh
+  permissions: '0700'
+  content: |
+    #!/bin/env bash
+    export JENKINS_URL="http://localhost:8080"
+    export JENKINS_HOME="/var/lib/jenkins"
+    export GROOVY_HOME="$JENKINS_HOME/init.groovy.d"
+
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    dnf install -y jenkins java-11-openjdk
+
+    # Config files
+    mkdir -p /etc/systemd/system/jenkins.service.d/
+    /bin/cp /root/jenkins.systemd.override /etc/systemd/system/jenkins.service.d/override.conf
+    systemctl daemon-reload
+    mkdir $GROOVY_HOME
+    /bin/cp /root/default-user.groovy $GROOVY_HOME/default-user.groovy
+    /bin/cp /root/disable-controller-executor.groovy $GROOVY_HOME/disable-controller-executor.groovy
+    chown -R jenkins:jenkins $GROOVY_HOME
+
+    # Controller Firewall Config
+    systemctl stop firewalld.service
+    firewall-offline-cmd --zone=public --add-port 8080/tcp
+    systemctl start firewalld.service
+
+    # Start Jenkins
+    systemctl enable jenkins.service
+    systemctl start jenkins.service
+
+    # Download the Client/Agent Software and install Plugins
+    wget -P $JENKINS_HOME $JENKINS_URL/jnlpJars/jenkins-cli.jar
+
+    # Install Plugins (restart required before and after)
+    systemctl restart jenkins.service
+    sleep 10
+    #curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- $JENKINS_URL/updateCenter/byId/default/postBack
+    java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} install-plugin ${jenkins_plugins}
+    systemctl restart jenkins.service
+
+    # Agent Setup
+    mkdir $JENKINS_HOME/jenkins-agent
+    wget -P $JENKINS_HOME/jenkins-agent $JENKINS_URL/jnlpJars/slave.jar
+    chown -R jenkins:jenkins $JENKINS_HOME/jenkins-agent
+    
+    # Register node
+    cat <<-EOF | java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} create-node ControllerAgent
+    <slave>
+      <name>ControllerAgent</name>
+      <remoteFS>$JENKINS_HOME</remoteFS>
+      <numExecutors>2</numExecutors>
+      <launcher class="hudson.slaves.JNLPLauncher" />
+      <label>build</label>
+    </slave>
+    EOF
+
+    _COOKIE_JAR=$(mktemp)
+    TOKEN=$(curl -c "$_COOKIE_JAR" --user "admin:${jenkins_password}" -s $JENKINS_URL/crumbIssuer/api/json | jq -r '.crumbRequestField+"="+.crumb')
+    SECRET=$(curl -b "$_COOKIE_JAR" --user "admin:${jenkins_password}" -d "$TOKEN" --data-urlencode "script=$(</root/secret.groovy)" $JENKINS_URL/scriptText | awk -F',' '{print $2}')
+    rm "$_COOKIE_JAR"
+
+    # Start the Agent
+    cmd="java -jar $JENKINS_HOME/jenkins-agent/slave.jar -jnlpUrl $JENKINS_URL/computer/ControllerAgent/slave-agent.jnlp -secret $SECRET"
+    echo $cmd
+    nohup sudo -u jenkins $cmd &>/home/opc/jenkins.log &
+
+    # Generate an SSH key
+    sudo -u jenkins ssh-keygen -t rsa -N '' -f ~jenkins/.ssh/id_rsa
+  append: false
+  defer: true
+runcmd:
+  - sudo /root/jenkins_setup.sh
