@@ -13,5 +13,5 @@ locals {
     compute_image     = "Oracle Linux"
     compute_shape     = "VM.Standard.E3.Flex"
     is_flexible_shape = contains(local.compute_flexible_shapes, local.compute_shape)
-    jenkins_password  = var.jenkins_password != "" ? var.jenkins_password : random_password.admin_password.result
+    password          = var.password != "" ? var.password : random_password.password.result
 }

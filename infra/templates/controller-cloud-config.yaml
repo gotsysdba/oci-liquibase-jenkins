@@ -88,18 +88,17 @@ write_files:
     # Download the Client/Agent Software and install Plugins
     wget -P $JENKINS_HOME $JENKINS_URL/jnlpJars/jenkins-cli.jar
 
-    # Install Plugins (restart required before and after)
-    systemctl restart jenkins.service
-    sleep 10
-    #curl -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- $JENKINS_URL/updateCenter/byId/default/postBack
-    java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} install-plugin ${jenkins_plugins}
-    systemctl restart jenkins.service
-
     # Agent Setup
     mkdir $JENKINS_HOME/jenkins-agent
     wget -P $JENKINS_HOME/jenkins-agent $JENKINS_URL/jnlpJars/slave.jar
     chown -R jenkins:jenkins $JENKINS_HOME/jenkins-agent
-    
+
+    # Install Plugins (restart required before and after)
+    systemctl restart jenkins.service
+    sleep 10
+    java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} install-plugin ${jenkins_plugins}
+    systemctl restart jenkins.service
+      
     # Register node
     cat <<-EOF | java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} create-node ControllerAgent
     <slave>
@@ -111,6 +110,21 @@ write_files:
     </slave>
     EOF
 
+    # Generate an SSH key
+    sudo -u jenkins ssh-keygen -t rsa -N '' -f ~jenkins/.ssh/id_rsa
+
+    # Move Wallet
+    mv ${wallet_file} $JENKINS_HOME
+    sudo chown jenkins:jenkins $JENKINS_HOME/*_wallet.zip
+  append: false
+  defer: true
+- path: /root/jenkins_agent.sh
+  permissions: '0700'
+  content: |
+    #!/bin/env bash
+    export JENKINS_URL="http://localhost:8080"
+    export JENKINS_HOME="/var/lib/jenkins"
+
     _COOKIE_JAR=$(mktemp)
     TOKEN=$(curl -c "$_COOKIE_JAR" --user "admin:${jenkins_password}" -s $JENKINS_URL/crumbIssuer/api/json | jq -r '.crumbRequestField+"="+.crumb')
     SECRET=$(curl -b "$_COOKIE_JAR" --user "admin:${jenkins_password}" -d "$TOKEN" --data-urlencode "script=$(</root/secret.groovy)" $JENKINS_URL/scriptText | awk -F',' '{print $2}')
@@ -119,11 +133,9 @@ write_files:
     # Start the Agent
     cmd="java -jar $JENKINS_HOME/jenkins-agent/slave.jar -jnlpUrl $JENKINS_URL/computer/ControllerAgent/slave-agent.jnlp -secret $SECRET"
     echo $cmd
-    nohup sudo -u jenkins $cmd &>/home/opc/jenkins.log &
-
-    # Generate an SSH key
-    sudo -u jenkins ssh-keygen -t rsa -N '' -f ~jenkins/.ssh/id_rsa
+    nohup sudo -u jenkins $cmd &>/var/log/jenkins/jenkins_agent.log &
   append: false
   defer: true
 runcmd:
   - sudo /root/jenkins_setup.sh
+  - sudo /root/jenkins_agent.sh

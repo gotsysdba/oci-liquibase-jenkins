@@ -22,9 +22,18 @@ variable "proj_abrv" {
   default = "jenkins"
 }
 
+// Jenkins and ADB Password
+variable "password" {
+  default     = ""
+}
+
 // Computes
 variable "linux_os_version" {
     default = "8"
+}
+
+variable "compute_user" {
+    default = "opc"
 }
 
 //LBaaS Shape
@@ -57,11 +66,6 @@ variable "private_subnet_cidr" {
 
 variable "enable_lb_logging" {
   default = "false"
-}
-
-// Jenkins
-variable "jenkins_password" {
-  default     = ""
 }
 
 variable "jenkins_plugins" {

@@ -35,38 +35,38 @@ resource "oci_core_network_security_group_security_rule" "security_group_control
     }
 }
 
-// Security Group for ADB
-resource "oci_core_network_security_group" "security_group_adb" {
-    compartment_id = local.compartment_ocid
-    vcn_id         = oci_core_vcn.vcn.id
-    display_name   = format("%s-security-group-adb", var.proj_abrv)
-}
-// Security Group for ADB - EGRESS
-resource "oci_core_network_security_group_security_rule" "security_group_adb_egress_grp" {
-    network_security_group_id = oci_core_network_security_group.security_group_adb.id
-    direction                 = "EGRESS"
-    protocol                  = "6"
-    destination               = oci_core_network_security_group.security_group_adb.id
-    destination_type          = "NETWORK_SECURITY_GROUP"
-}
-resource "oci_core_network_security_group_security_rule" "security_group_adb_egress" {
-    network_security_group_id = oci_core_network_security_group.security_group_adb.id
-    direction                 = "EGRESS"
-    protocol                  = "6"
-    destination               = "0.0.0.0/0"
-    destination_type          = "CIDR_BLOCK"
-}
-// Security Group for ADB - INGRESS
-resource "oci_core_network_security_group_security_rule" "security_group_adb_ingress" {
-    network_security_group_id = oci_core_network_security_group.security_group_adb.id
-    direction                 = "INGRESS"
-    protocol                  = "6"
-    source                    = "0.0.0.0/0"
-    source_type               = "CIDR_BLOCK"
-    tcp_options {
-        destination_port_range {
-        max = 1522
-        min = 1522
-        }
-    }
-}
+# // Security Group for ADB
+# resource "oci_core_network_security_group" "security_group_adb" {
+#     compartment_id = local.compartment_ocid
+#     vcn_id         = oci_core_vcn.vcn.id
+#     display_name   = format("%s-security-group-adb", var.proj_abrv)
+# }
+# // Security Group for ADB - EGRESS
+# resource "oci_core_network_security_group_security_rule" "security_group_adb_egress_grp" {
+#     network_security_group_id = oci_core_network_security_group.security_group_adb.id
+#     direction                 = "EGRESS"
+#     protocol                  = "6"
+#     destination               = oci_core_network_security_group.security_group_adb.id
+#     destination_type          = "NETWORK_SECURITY_GROUP"
+# }
+# resource "oci_core_network_security_group_security_rule" "security_group_adb_egress" {
+#     network_security_group_id = oci_core_network_security_group.security_group_adb.id
+#     direction                 = "EGRESS"
+#     protocol                  = "6"
+#     destination               = "0.0.0.0/0"
+#     destination_type          = "CIDR_BLOCK"
+# }
+# // Security Group for ADB - INGRESS
+# resource "oci_core_network_security_group_security_rule" "security_group_adb_ingress" {
+#     network_security_group_id = oci_core_network_security_group.security_group_adb.id
+#     direction                 = "INGRESS"
+#     protocol                  = "6"
+#     source                    = "0.0.0.0/0"
+#     source_type               = "CIDR_BLOCK"
+#     tcp_options {
+#         destination_port_range {
+#         max = 1522
+#         min = 1522
+#         }
+#     }
+# }
