@@ -39,6 +39,11 @@ def deploy(password, wallet, args):
     cmd = f'lb update -emit_schema -changelog controller.xml;'
     run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, False)
 
+    if os.path.exists('controller.data.xml'):
+        log.info('Running controller.data.xml')
+        cmd = f'lb update -emit_schema -changelog controller.data.xml;'
+        run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, False)
+    
 
 def generate(password, wallet, args):
     cmd = f'lb genschema -grants -split'
