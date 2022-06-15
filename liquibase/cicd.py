@@ -6,19 +6,33 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)8s: %(message)s',
                     datefmt='%Y-%b-%d %H:%M:%S', level=logging.INFO)
 log = logging.getLogger(__name__)
 
+""" Globals
+"""
+tns_admin = '/var/lib/jenkins'
+
 """ Functions
 """
-def run_sqlcl(schema, password, service, cmd, wallet, is_admin=False):
+def run_sqlcl(schema, password, service, cmd, resolution, conn_file, is_admin=False):
     log.debug(f'Running: {cmd} as admin? {is_admin}')
     lb_env = os.environ.copy()
+    lb_env['TNS_ADMIN']  = tns_admin
+    lb_env['password']   = password
     if is_admin:
         lb_env['schema'] = 'ADMIN'
     else:
         lb_env['schema'] = schema
-    lb_env['password'] = password
 
-    conn = ['sql', '-cloudconfig', f'{wallet}', f'{schema}/{password}@{service}_high']
-    result = subprocess.run(conn, universal_newlines=True, input=f'{cmd}', env=lb_env,
+    if resolution == 'wallet':
+        wallet = 'set cloudconfig {tns_admin}/{conn_file}'
+
+    # Keep password off the command line/shell history
+    sql_cmd = f'''
+        {wallet}
+        conn {schema}/{password}@{service}_high
+        {cmd}
+    '''
+
+    result = subprocess.run('sql /nolog', universal_newlines=True, input=f'{sql_cmd}', env=lb_env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     result_list = result.stdout.splitlines();
@@ -30,24 +44,24 @@ def run_sqlcl(schema, password, service, cmd, wallet, is_admin=False):
     log.info('SQLcl command successful')
 
 
-def deploy(password, wallet, args):
+def deploy(password, resolution, conn_file, args):
     log.info('Running controller.admin.xml')
     cmd = f'lb update -emit_schema -changelog controller.admin.xml;'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, True)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, True)
 
     log.info('Running controller.xml')
     cmd = f'lb update -emit_schema -changelog controller.xml;'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, False)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
 
     if os.path.exists('controller.data.xml'):
         log.info('Running controller.data.xml')
         cmd = f'lb update -emit_schema -changelog controller.data.xml;'
-        run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, False)
+        run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
     
 
-def generate(password, wallet, args):
+def generate(password, resolution, conn_file, args):
     cmd = f'lb genschema -grants -split'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, False)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
 
     # To avoid false changes impacting version control, replace schema names
     # You do you, here:
@@ -59,10 +73,11 @@ def generate(password, wallet, args):
         s = s.replace(args.dbUser, '${schema}')
         with open(filepath, "w") as file:
             file.write(s)
-    
-def destroy(password, wallet, args):
+
+
+def destroy(password, resolution, conn_file, args):
     cmd = f'lb rollback -changelog user.xml -count 999;'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, wallet, True)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, True)
     
 """ INIT
 """
@@ -117,10 +132,15 @@ if __name__ == "__main__":
         except:
             sys.exit(log.fatal('Database password required')) 
 
+    resolution = 'wallet' # Default
     if args.dbWallet:
-        wallet = args.dbWallet
+        conn_file     = args.dbWallet
     else:
-        wallet = f'/var/lib/jenkins/{args.dbName}_wallet.zip'
+        if os.path.exists(f'{tns_admin}/{args.dbName}_wallet.zip'):
+            conn_file = f'{args.dbName}_wallet.zip'
+        elif os.path.exists(f'{tns_admin}/tnsnames.ora'):
+            resolution   = 'tnsnames'
+            conn_file    = 'tnsnames.ora'
 
-    args.func(password, wallet, args)
+    args.func(password, resolution, conn_file,  args)
     sys.exit(0)
