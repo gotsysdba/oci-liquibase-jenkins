@@ -14,9 +14,20 @@ resource "oci_database_autonomous_database" "autonomous_database" {
     is_auto_scaling_enabled     = false
     license_model               = var.is_paid ? var.adb_license_model : "LICENSE_INCLUDED"
     whitelisted_ips             = [ oci_core_instance.instance_controller.public_ip ]
-    is_mtls_connection_required = false
+    is_mtls_connection_required = true
     nsg_ids                     = []
     lifecycle {
         ignore_changes = all
     }
+}
+
+resource "oci_database_autonomous_database_wallet" "database_wallet" {
+  autonomous_database_id = oci_database_autonomous_database.autonomous_database.id
+  password               = random_password.password.result
+  base64_encode_content  = "true"
+}
+
+resource "local_file" "database_wallet_file" {
+  content_base64 = oci_database_autonomous_database_wallet.database_wallet.content
+  filename       = format("../wallet/%sDB_wallet.zip", upper(var.proj_abrv))
 }

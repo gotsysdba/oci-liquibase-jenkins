@@ -109,6 +109,10 @@ write_files:
       <label>build</label>
     </slave>
     EOF
+
+    # Move Wallet
+    mv ${wallet_file} $JENKINS_HOME
+    sudo chown jenkins:jenkins $JENKINS_HOME/*_wallet.zip
   append: false
   defer: true
 - path: /root/jenkins_agent.sh
@@ -127,12 +131,6 @@ write_files:
     cmd="java -jar $JENKINS_HOME/jenkins-agent/slave.jar -jnlpUrl $JENKINS_URL/computer/ControllerAgent/slave-agent.jnlp -secret $SECRET"
     echo $cmd
     nohup sudo -u jenkins $cmd &>/var/log/jenkins/jenkins_agent.log &
-  append: false
-  defer: true
-- path: /var/lib/jenkins/tnsnames.ora
-  permissions: '0700'
-  content: |
-    ${database_service} = {connection_string}
   append: false
   defer: true
 runcmd:
