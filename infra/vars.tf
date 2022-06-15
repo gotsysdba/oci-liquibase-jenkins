@@ -18,6 +18,10 @@ variable "private_key_path" {
 }
 
 // General Configuration
+variable "is_paid" {
+    default = false
+}
+
 variable "proj_abrv" {
   default = "jenkins"
 }
@@ -25,6 +29,10 @@ variable "proj_abrv" {
 // Jenkins and ADB Password
 variable "password" {
   default     = ""
+}
+
+variable "adb_license_model" {
+  default = "BRING_YOUR_OWN_LICENSE"
 }
 
 // Computes

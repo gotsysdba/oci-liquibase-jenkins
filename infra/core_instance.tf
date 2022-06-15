@@ -42,7 +42,6 @@ resource "oci_core_instance" "instance_controller" {
         name          = "Bastion"
         }
     }
-    // If this is ALF, we can't place in the private subnet as need access to the cloud agent/packages
     create_vnic_details {
         subnet_id        = oci_core_subnet.subnet_public.id
         assign_public_ip = true

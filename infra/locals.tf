@@ -11,7 +11,7 @@ locals {
 locals {
     compartment_ocid  = var.compartment_ocid != "" ? var.compartment_ocid : var.tenancy_ocid
     compute_image     = "Oracle Linux"
-    compute_shape     = "VM.Standard.E3.Flex"
+    compute_shape     = var.is_paid ? "VM.Standard.E3.Flex" : "VM.Standard.E2.1.Micro"
     is_flexible_shape = contains(local.compute_flexible_shapes, local.compute_shape)
     password          = var.password != "" ? var.password : random_password.password.result
 }
