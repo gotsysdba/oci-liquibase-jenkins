@@ -16,8 +16,8 @@ Using [OCI Cloud Shell](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/
    - `export TF_VAR_password=<Unique Password>`
 6. To install into a specific compartment, change the TF_VAR_compartment_ocid variable (default root)
    - `export TF_VAR_compartment_ocid=ocid1.compartment....e7e5q`
-7. If this is Always Free, run:
-    - `export TF_VAR_is_paid=false`
+7. If not using Always Free resources, run:
+    - `export TF_VAR_is_paid=true`
 7. Deploy!
    - `terraform init`
    - `terraform plan`

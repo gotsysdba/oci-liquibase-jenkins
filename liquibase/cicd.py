@@ -12,33 +12,33 @@ tns_admin = '/var/lib/jenkins'
 
 """ Functions
 """
-def run_sqlcl(schema, password, service, cmd, resolution, conn_file, is_admin=False):
-    log.debug(f'Running: {cmd} as admin? {is_admin}')
+def run_sqlcl(schema, password, service, cmd, resolution, conn_file, run_as):
     lb_env = os.environ.copy()
-    lb_env['TNS_ADMIN']  = tns_admin
-    lb_env['password']   = password
-    if is_admin:
-        lb_env['schema'] = 'ADMIN'
-    else:
-        lb_env['schema'] = schema
+    lb_env['TNS_ADMIN'] = tns_admin #<-Global
+    lb_env['password']  = password
+    lb_env['schema']    = schema
 
     if resolution == 'wallet':
-        wallet = 'set cloudconfig {tns_admin}/{conn_file}'
+        wallet = f'set cloudconfig {tns_admin}/{conn_file}'
 
     # Keep password off the command line/shell history
     sql_cmd = f'''
         {wallet}
-        conn {schema}/{password}@{service}_high
+        conn {run_as}/{password}@{service}_high
         {cmd}
     '''
 
-    result = subprocess.run('sql /nolog', universal_newlines=True, input=f'{sql_cmd}', env=lb_env,
+    log.debug(f'Running: {sql_cmd}')
+    result = subprocess.run(['sql', '/nolog'], universal_newlines=True, input=f'{sql_cmd}', env=lb_env,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    exit_status = 0
     result_list = result.stdout.splitlines();
     for line in filter(None, result_list):
         log.info(line)
-    if result.returncode:
+        if 'Error Message' in line:
+            exit_status = 1
+    if result.returncode or exit_status:
         sys.exit(log.fatal('Exiting...'))
 
     log.info('SQLcl command successful')
@@ -47,21 +47,21 @@ def run_sqlcl(schema, password, service, cmd, resolution, conn_file, is_admin=Fa
 def deploy(password, resolution, conn_file, args):
     log.info('Running controller.admin.xml')
     cmd = f'lb update -emit_schema -changelog controller.admin.xml;'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, True)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, 'ADMIN')
 
     log.info('Running controller.xml')
     cmd = f'lb update -emit_schema -changelog controller.xml;'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, args.dbUser)
 
     if os.path.exists('controller.data.xml'):
         log.info('Running controller.data.xml')
         cmd = f'lb update -emit_schema -changelog controller.data.xml;'
-        run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
+        run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, args.dbUser)
     
 
 def generate(password, resolution, conn_file, args):
     cmd = f'lb genschema -grants -split'
-    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, False)
+    run_sqlcl(args.dbUser, password, args.dbName, cmd, resolution, conn_file, args.dbUser)
 
     # To avoid false changes impacting version control, replace schema names
     # You do you, here:

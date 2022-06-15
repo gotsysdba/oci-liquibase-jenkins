@@ -8,11 +8,13 @@ As this is a demonstration of Jenkins/GitHub integration for CI/CD, you must use
 
 ## Assumptions
 
-- An existing OCI tenancy; currently Paid is only supported.  Always Free will be supported later.
+- An existing OCI tenancy
 - An existing [GitHub](https://github.com) Account
 - You have **forked** or **copied** this repository into your GitHub account
 
 ## Architecture Deployment
+
+By default, Always Free resources will be used.  If you do not have any Always Free resources available and are using paid tenancy, this demonstration can still be run by changing the Terraform variable to `is_paid=true` (as documented in the [infra/README.md](infra/README.md)).
 
 There are two main ways to deploy this Architecture:
 
