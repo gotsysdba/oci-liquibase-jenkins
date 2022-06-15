@@ -2,7 +2,9 @@
 
 _Important_: It is recommended to [create a new compartment](https://docs.oracle.com/en/cloud/paas/integration-cloud/oracle-integration-oci/creating-oci-compartment.html) in your tenancy for this deployment.
 
-## OCI Cloud Shell
+## Deployement
+
+### OCI Cloud Shell
 
 Using [OCI Cloud Shell](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm) is, by far, the easiest way to manually install this Architecture.
 
@@ -19,13 +21,13 @@ Using [OCI Cloud Shell](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/
    - `terraform plan`
    - `terraform apply`
 
-## Terraform Client
+### Terraform Client
 
-### Setup API Key Authentication
+#### Setup API Key Authentication
 
 Update the [terraform.tfvars.tmpl](terraform.tfvars.tmpl) file and rename it to `terraform.tfvars`.  For more information on the attributes and where to find the values, see [API Key Authentication](https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/terraformproviderconfiguration.htm#APIKeyAuth).
 
-### Install Terraform
+#### Install Terraform
 
 Instructions on installing Terraform are [here](https://www.terraform.io/intro/getting-started/install.html).  The manual, pre-compiled binary installation is quickest way to start using Terraform.
 
@@ -34,7 +36,7 @@ You can test that the install was successful by running the command:
 
 You should see usage information returned.
 
-### Build the Architecture
+#### Build the Architecture
 
 Once the environment has been setup.  Run the following to build the infrastructure:
 
@@ -43,3 +45,7 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+# Cleanup
+
+Tear down the infrastructure by running the following: `terraform destroy`
