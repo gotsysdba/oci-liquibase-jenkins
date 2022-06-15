@@ -110,9 +110,6 @@ write_files:
     </slave>
     EOF
 
-    # Generate an SSH key
-    sudo -u jenkins ssh-keygen -t rsa -N '' -f ~jenkins/.ssh/id_rsa
-
     # Move Wallet
     mv ${wallet_file} $JENKINS_HOME
     sudo chown jenkins:jenkins $JENKINS_HOME/*_wallet.zip
