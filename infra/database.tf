@@ -7,7 +7,7 @@ resource "oci_database_autonomous_database" "autonomous_database" {
     db_name                     = format("%sDB", upper(var.proj_abrv))
     cpu_core_count              = 1
     data_storage_size_in_tbs    = 1
-    db_version                  = var.is_paid ? "19c" : "21c"
+    db_version                  = "19c"
     db_workload                 = "OLTP"
     display_name                = format("%sDB", upper(var.proj_abrv))
     is_free_tier                = var.is_paid ? false : true
