@@ -1,4 +1,7 @@
 resource "null_resource" "upload_wallet" {
+  triggers = {
+    instance_id = oci_core_instance.instance_controller.id
+  }
   provisioner "file" {
     connection {
       type                = "ssh"

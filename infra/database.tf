@@ -2,7 +2,7 @@
 # All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 resource "oci_database_autonomous_database" "autonomous_database" {
-    admin_password              = random_password.password.result
+    admin_password              = local.password
     compartment_id              = local.compartment_ocid
     db_name                     = format("%sDB", upper(var.proj_abrv))
     cpu_core_count              = 1
