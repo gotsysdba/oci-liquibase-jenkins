@@ -4,6 +4,7 @@ package_upgrade: false
 packages:
   - git
   - sqlcl
+  - java-11-openjdk
 write_files:
 - path: /root/jenkins.systemd.override
   permissions: '0644'
@@ -65,7 +66,7 @@ write_files:
 
     wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
     rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-    dnf install -y jenkins java-11-openjdk
+    dnf install -y jenkins
 
     # Config files
     mkdir -p /etc/systemd/system/jenkins.service.d/
@@ -84,6 +85,8 @@ write_files:
     # Start Jenkins
     systemctl enable jenkins.service
     systemctl start jenkins.service
+    # Restarting to initiate plugin-discovery for below
+    systemctl restart jenkins.service
 
     # Download the Client/Agent Software and install Plugins
     wget -P $JENKINS_HOME $JENKINS_URL/jnlpJars/jenkins-cli.jar
@@ -93,10 +96,13 @@ write_files:
     wget -P $JENKINS_HOME/jenkins-agent $JENKINS_URL/jnlpJars/slave.jar
     chown -R jenkins:jenkins $JENKINS_HOME/jenkins-agent
 
-    # Install Plugins (restart required before and after)
-    systemctl restart jenkins.service
-    sleep 10
-    java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} install-plugin ${jenkins_plugins}
+    # Install Plugins
+    plugin_exit=1
+    while (( $plugin_exit > 0 )); do
+      java -jar $JENKINS_HOME/jenkins-cli.jar -auth admin:${jenkins_password} install-plugin ${jenkins_plugins}
+      plugin_exit=$?
+      sleep 10
+    done
     systemctl restart jenkins.service
       
     # Register node
