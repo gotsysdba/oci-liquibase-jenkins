@@ -1,4 +1,5 @@
 # oci-liquibase-jenkins
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)
 
 Demonstration of using [Liquibase](https://www.liquibase.org) (via [SQLcl](https://www.oracle.com/uk/database/technologies/appdev/sqlcl.html)) and [Jenkins](https://www.jenkins.io) for CI/CD using [Oracle Cloud Infrastructure (OCI)](https://cloud.oracle.com) Resources.
 
@@ -54,31 +55,38 @@ Once the infrastructure is deployed, Jenkins and GitHub will need to be configur
 In order for Jenkins to use the private key, saved above, convert it:
 `openssl pkcs8 -topk8 -inform PEM -outform PEM -in <key-in-your-downloads-folder.pem> -out converted-github-app.pem -nocrypt`
 
+If `openssl` is not installed on your local machine, you can use [OCI Cloud Shell](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm) to convert.
+
+1. Open Cloud Shell from the OCI Console
+2. Either drag and drop the file from your local machine into the Cloud Shell window, or use the "Upload" button from the Cloud Shell hamburger menu.
+3. Run the above `openssl` command in the Cloud Shell
+
 ### Add Jenkins Credential
 
 Login to Jenkins using the admin username and go to `Manage Jenkins > Manage Credentials`:
 
 1. Under "Stores scoped to Jenkins", click "Jenkins"
 2. Click "Global credentials (unrestricted)"
-3. Click "Add Credentials"
+3. Click "Add Credentials" in the Left Hand Navigation bar
     - **Kind:**   GitHub App
     - **ID:**     GitHubAppDemo
     - **App ID:** < App ID > (Recorded above)
     - **Key:**    < Contents of converted-github-app.pem created above >
-
-Test Connection is successful.
+4. Click "Test Connection" which should be successful.
+5. Click "OK"
 
 ### Add Database Credential
 
-Login to Jenkins using the admin username and go to `Manage Jenkins > Manage Credentials`:
+From the Jenkins Dashboard go to `Manage Jenkins > Manage Credentials`:
 
 1. Under "Stores scoped to Jenkins", click "Jenkins"
 2. Click "Global credentials (unrestricted)"
-3. Click "Add Credentials"
+3. Click "Add Credentials" in the Left Hand Navigation bar
     - **Kind:**     Username with password
     - **Username:** ADMIN
     - **Password:** `<Password for ADB Admin Account>`
     - **ID:**       JENKINSDB_ADMIN
+4. Click "OK"
 
 ### Add an Multibranch Pipeline
 
@@ -90,4 +98,8 @@ From the Jenkins Dashboard, click "New Item":
     - **Branch Source:** GitHub
     - **Credentials:** GitHubAppDemo
     - **Repository HTTPS URL:** < Link to GitHub Repo; example: `https://github.com/gotsysdba/oci-liquibase-jenkins`>
-3. Scroll down and "Save"
+3. Click "Validate" under the "Repository HTTPS URL" field
+    - Response should be: "Credentials ok. Connected to `<GitHub Repo>`."
+4. Scroll down and "Save"
+5. A "Scan Repository Log" screen will appear with "Finished: SUCCESS"
+6. Integration is Configured! Proceed to the Hands On [Demonstration](workflow_demo/jenkins.md)
