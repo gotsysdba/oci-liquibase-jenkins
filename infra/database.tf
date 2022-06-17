@@ -13,7 +13,6 @@ resource "oci_database_autonomous_database" "autonomous_database" {
     is_free_tier                = var.is_paid ? false : true
     is_auto_scaling_enabled     = false
     license_model               = var.is_paid ? var.adb_license_model : "LICENSE_INCLUDED"
-    whitelisted_ips             = [ oci_core_instance.instance_controller.public_ip ]
     is_mtls_connection_required = true
     nsg_ids                     = []
     lifecycle {
