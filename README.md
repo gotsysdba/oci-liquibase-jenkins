@@ -1,5 +1,6 @@
 # oci-liquibase-jenkins
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)
+
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=gotsysdba_oci-liquibase-jenkins&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=gotsysdba_oci-liquibase-jenkins)
 
 Demonstration of using [Liquibase](https://www.liquibase.org) (via [SQLcl](https://www.oracle.com/uk/database/technologies/appdev/sqlcl.html)) and [Jenkins](https://www.jenkins.io) for CI/CD using [Oracle Cloud Infrastructure (OCI)](https://cloud.oracle.com) Resources.
 
@@ -71,7 +72,7 @@ If `openssl` is not installed on your local machine, you can use [OCI Cloud Shel
 5. Click "Add Credentials" in the Left Hand Navigation bar
     - **Kind:**   GitHub App
     - **ID:**     GitHubAppDemo
-    - **App ID:** < App ID > (Recorded above) 
+    - **App ID:** < App ID > (Recorded above)
     - **Key:**    < Contents of converted-github-app.pem created above >
 6. Click "Test Connection" which should be successful.
 7. Click "OK"
@@ -95,15 +96,15 @@ From the Jenkins Dashboard:
 From the Jenkins Dashboard:
 
 1. Click "New Item"
-1. **Item Name:** Demonstration
-2. Select: `Multibranch Pipeline > OK`
+2. **Item Name:** Demonstration
+3. Select: `Multibranch Pipeline > OK`
     - **Display Name:** Demonstration
     - **Branch Source:** GitHub
     - **Credentials:** GitHubAppDemo
     - **Repository HTTPS URL:** < Link to GitHub Repo; example: `https://github.com/<your GitHub Repository Name>/oci-liquibase-jenkins`>
-3. Click "Validate" under the "Repository HTTPS URL" field
+4. Click "Validate" under the "Repository HTTPS URL" field
     - Response should be: "Credentials ok. Connected to `<GitHub Repo>`."
-4. Scroll down and "Save"
-5. A "Scan Repository Log" screen will appear with "Finished: SUCCESS"
+5. Scroll down and "Save"
+6. A "Scan Repository Log" screen will appear with "Finished: SUCCESS"
 
 **Integration is Configured!** Proceed to the Hands On [Demonstration](workflow_demo/jenkins.md)

@@ -48,12 +48,13 @@ If the tear down and additional automated tests succeed, the "Pull Requests" is 
 1. If not already on the New Issue, navigate to "Issues" and click on the issue you just created.
 2. Assign the issue to yourself and click on "Create a Branch"
 ![Assign Issue](images/step1-create-issue3.png)
-3. On the Pop-Up: Leave Defaults and "Create Branch"<br>
+3. On the Pop-Up: Leave Defaults and "Create Branch"  
 ![Create Branch](images/step1-create-issue4.png)
 
 #### **Feature Build Pipeline**
 
 On the Jenkins Controller, a new build will have been initiated by the creation of the branch.  This build will create the isolated development environment to work on the issue in.
+
 1. Click on "Demonstration"
 ![Pipeline](images/step-2-Pipeline.png)
 2. Click on the "Feature" branch (1-add-last...)
@@ -78,9 +79,11 @@ ALTER TABLE INVENTORY1.INVENTORY ADD LAST_UPDATED TIMESTAMP;
 ![Alter](images/step-3-alter-table.png)
 
 #### **Export Schema Changes**
+
 In Cloud Shell, navigate to your repositories liquibase directory.  This directory contains the Liquibase ChangeSets which define the "Production" schema.  
 
 Ensure you are in the git "feature" branch for your change:
+
 ```bash
 $ git fetch
 
@@ -191,4 +194,3 @@ SELECT COUNT(*) FROM DBA_USERS WHERE USERNAME='INVENTORY1';
 #### **Main Branch Pipeline**
 
 On the Jenkins Controller, a new build will have been initiated by the Merge. This build will implement the change (new LAST_UPDATED column) in the "Production" INVENTORY schema.
-
