@@ -74,3 +74,50 @@ ALTER TABLE INVENTORY1.INVENTORY ADD LAST_UPDATED TIMESTAMP;
 ```
 ![Alter](images/step-3-alter-table.png)
 
+#### Export Schema Changes
+In Cloud Shell, navigate to your repositories liquibase directory.  This directory contains the Liquibase ChangeSets which define the "Production" schema.  
+
+Ensure you are in the git "feature" branch for your change:
+```bash
+$ git fetch
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (32/32), done.
+remote: Compressing objects: 100% (30/30), done.
+remote: Total 30 (delta 20), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (30/30), 6.76 KiB | 576.00 KiB/s, done.
+From https://github.com/gotsysdba/oci-liquibase-jenkins-clone
+ * [new branch]      1-add-last_updated-column-to-inventory-table -> origin/1-add-last_updated-column-to-inventory-table
+
+$ git checkout 1-add-last_updated-column-to-inventory-table
+Branch '1-add-last_updated-column-to-inventory-table' set up to track remote branch '1-add-last_updated-column-to-inventory-table' from 'origin'.
+Switched to a new branch '1-add-last_updated-column-to-inventory-table'
+
+$ git branch
+* 1-add-last_updated-column-to-inventory-table
+  main
+```
+
+Export the change made in the INVENTORY1 schema:
+
+```bash
+$ sql /nolog
+SQL> set cloudconfig ../wallet/JENKINSDB_wallet.zip
+SQL> connect INVENTORY1/<password>@JENKINSDB_HIGH
+SQL> lb genschema -split
+SQL> exit
+```
+
+After exporting, one file would have changed which will represent the change to the schema:
+
+```bash
+$ git status
+On branch 1-add-last_updated-column-to-inventory-table
+Your branch is up to date with 'origin/1-add-last_updated-column-to-inventory-table'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   table/inventory_table.xml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
