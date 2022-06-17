@@ -34,10 +34,11 @@ def run_sqlcl(schema, password, service, cmd, resolution, conn_file, run_as):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     exit_status = 0
+    error_matches = ['Error Message','ORA-','SQL Error']
     result_list = result.stdout.splitlines();
     for line in filter(None, result_list):
         log.info(line)
-        if 'Error Message' or 'SQL Error' in line:
+        if any(x in line for x in error_matches):
             exit_status = 1
     if result.returncode or exit_status:
         log.fatal('Exiting...')
