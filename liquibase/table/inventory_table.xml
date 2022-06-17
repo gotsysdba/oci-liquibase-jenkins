@@ -5,11 +5,11 @@
 	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
 	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-	<changeSet id="f96ae259c6bd8b24c7b54ddd18c975d621140d4b" author="(${schema})-Generated" failOnError="false"    >
-		<n0:createSxmlObject objectName="INVENTORY" objectType="TABLE" ownerName="${schema}"   >
+	<changeSet id="94f95d8dfed9fe0c386ee9926333efbb7259a6cd" author="(INVENTORY1)-Generated" failOnError="false"    >
+		<n0:createSxmlObject objectName="INVENTORY" objectType="TABLE" ownerName="INVENTORY1"   >
 			<n0:source><![CDATA[
   <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
-   <SCHEMA>${schema}</SCHEMA>
+   <SCHEMA>INVENTORY1</SCHEMA>
    <NAME>INVENTORY</NAME>
    <RELATIONAL_TABLE>
       <COL_LIST>
@@ -30,6 +30,11 @@
             <NAME>INVENTORYCOUNT</NAME>
             <DATATYPE>NUMBER</DATATYPE>
             <SCALE>0</SCALE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>LAST_UPDATED</NAME>
+            <DATATYPE>TIMESTAMP</DATATYPE>
+            <SCALE>6</SCALE>
          </COL_LIST_ITEM>
       </COL_LIST>
       <CHECK_CONSTRAINT_LIST>
