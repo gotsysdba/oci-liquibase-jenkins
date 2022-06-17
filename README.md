@@ -11,7 +11,7 @@ As this is a demonstration of Jenkins/GitHub integration for CI/CD, you must use
 
 - An existing OCI tenancy
 - An existing [GitHub](https://github.com) Account
-- You have **forked** or **copied** this repository into your GitHub account
+- You have **_forked_** this repository into your own GitHub account
 
 ## Architecture Deployment
 
@@ -31,11 +31,11 @@ Once the infrastructure is deployed, Jenkins and GitHub will need to be configur
 ### Create the GitHub App
 
 1. In your Github Account, navigate to `Settings -> Developer settings -> GitHub Apps`
-2. Select "New GitHub App" (Confirm Password)
+2. Select "New GitHub App" (Confirm Password, if prompted)
 3. Register new GitHub App, Unless other specified below, leave the defaults
     - **GitHub App name:** Jenkins - < Github Account Name >
-    - **Homepage URL:** < Link to your GitHub Page; example: `https://github.com/gotsysdba` >
-    - **Webhook URL:** < Link to your Jenkins Server; example: `https://jenkins.example.com/github-webhook/` >
+    - **Homepage URL:** Link to your GitHub Page; example: `https://github.com/gotsysdba`
+    - **Webhook URL:** Link to your Jenkins Server; example: `https://jenkins.example.com/github-webhook/`.  _The trailing slash is important_
     - **Repository permissions:**
         - Commit statuses - Read and Write
         - Contents: Read-only
@@ -47,7 +47,7 @@ Once the infrastructure is deployed, Jenkins and GitHub will need to be configur
 6. Scroll down to "Private keys" and Generate a private key (will be prompted to save; save it to a safe location)
 7. Scroll back up the page and click "Install App"
     - Click "Install" next to your GitHub account name
-    - Only select repositories; choose as required
+    - Only select repositories; choose `<your GitHub Repository Name>/oci-liquibase-jenkins`
     - Install
 
 ### Convert the Private Key
@@ -63,43 +63,47 @@ If `openssl` is not installed on your local machine, you can use [OCI Cloud Shel
 
 ### Add Jenkins Credential
 
-Login to Jenkins using the admin username and go to `Manage Jenkins > Manage Credentials`:
-
-1. Under "Stores scoped to Jenkins", click "Jenkins"
-2. Click "Global credentials (unrestricted)"
-3. Click "Add Credentials" in the Left Hand Navigation bar
+1. Login to your Jenkins Controller as admin and the password specified during the infrastructure deployment
+    - The URL will have been output at the end of the infrastructure deployment
+2. Navigate to: `Manage Jenkins > Manage Credentials`
+3. Under "Stores scoped to Jenkins", click "Jenkins"
+4. Click "Global credentials (unrestricted)"
+5. Click "Add Credentials" in the Left Hand Navigation bar
     - **Kind:**   GitHub App
     - **ID:**     GitHubAppDemo
-    - **App ID:** < App ID > (Recorded above)
+    - **App ID:** < App ID > (Recorded above) 
     - **Key:**    < Contents of converted-github-app.pem created above >
-4. Click "Test Connection" which should be successful.
-5. Click "OK"
+6. Click "Test Connection" which should be successful.
+7. Click "OK"
 
 ### Add Database Credential
 
-From the Jenkins Dashboard go to `Manage Jenkins > Manage Credentials`:
+From the Jenkins Dashboard:
 
-1. Under "Stores scoped to Jenkins", click "Jenkins"
-2. Click "Global credentials (unrestricted)"
-3. Click "Add Credentials" in the Left Hand Navigation bar
+1. Navigate to: `Manage Jenkins > Manage Credentials`
+2. Under "Stores scoped to Jenkins", click "Jenkins"
+3. Click "Global credentials (unrestricted)"
+4. Click "Add Credentials" in the Left Hand Navigation bar
     - **Kind:**     Username with password
     - **Username:** ADMIN
     - **Password:** `<Password for ADB Admin Account>`
     - **ID:**       JENKINSDB_ADMIN
-4. Click "OK"
+5. Click "OK"
 
 ### Add an Multibranch Pipeline
 
-From the Jenkins Dashboard, click "New Item":
+From the Jenkins Dashboard:
 
+1. Click "New Item"
 1. **Item Name:** Demonstration
 2. Select: `Multibranch Pipeline > OK`
     - **Display Name:** Demonstration
     - **Branch Source:** GitHub
     - **Credentials:** GitHubAppDemo
-    - **Repository HTTPS URL:** < Link to GitHub Repo; example: `https://github.com/gotsysdba/oci-liquibase-jenkins`>
+    - **Repository HTTPS URL:** < Link to GitHub Repo; example: `https://github.com/<your GitHub Repository Name>/oci-liquibase-jenkins`>
 3. Click "Validate" under the "Repository HTTPS URL" field
     - Response should be: "Credentials ok. Connected to `<GitHub Repo>`."
 4. Scroll down and "Save"
 5. A "Scan Repository Log" screen will appear with "Finished: SUCCESS"
-6. Integration is Configured! Proceed to the Hands On [Demonstration](workflow_demo/jenkins.md)
+
+**Integration is Configured!** Proceed to the Hands On [Demonstration](workflow_demo/jenkins.md)
