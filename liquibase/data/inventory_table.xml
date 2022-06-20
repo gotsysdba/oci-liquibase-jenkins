@@ -5,7 +5,7 @@
     xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-    <changeSet id="create_${schema}" labels="data_${schema}" author="john" failOnError="true" alwaysRun="true">
+    <changeSet id="create_${schema}" labels="data_${schema}" author="john" failOnError="true" runAlways="true">
         <n0:runOracleScript objectName="SCRIPT" objectType="DATA" ownerName="INVENTORY" sourceType="STRING"  >
             <n0:source><![CDATA[
                 TRUNCATE TABLE INVENTORY;                
